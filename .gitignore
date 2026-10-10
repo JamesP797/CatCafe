@@ -1,0 +1,30 @@
+# Build output and generated data
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/*
+!Build/Build.version
+!Build/**/*.png
+!Build/**/*.ico
+
+# Generated project files (regenerate from the .uproject)
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+.vs/
+.vscode/
+.idea/
+*.xcodeproj
+*.xcworkspace
+
+# Plugin build output
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# Misc
+*.log
+*.tmp
