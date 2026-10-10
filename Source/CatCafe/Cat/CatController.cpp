@@ -65,7 +65,7 @@ FInteractEligibility* ACatController::CanInteract(AActor* HeldObject)
 	if (ACoffeeCup* CoffeeCupToGrab = Cast<ACoffeeCup>(HeldObject))
 	{
 		return new FInteractEligibility(!CoffeeCup 
-			// && CoffeeCupToGrab->isFull() 
+			&& CoffeeCupToGrab->IsFull() 
 			&& bWantsCoffee, 
 			FText::FromString("Give coffee"));
 	}
