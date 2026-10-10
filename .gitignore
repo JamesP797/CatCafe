@@ -20,6 +20,7 @@ Build/*
 .idea/
 *.xcodeproj
 *.xcworkspace
+*.slnx
 
 # Plugin build output
 Plugins/**/Binaries/
@@ -28,3 +29,6 @@ Plugins/**/Intermediate/
 # Misc
 *.log
 *.tmp
+*.DotSettings.user
+UpgradeLog*.htm
+_UpgradeReport_Files/
