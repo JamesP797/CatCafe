@@ -4,11 +4,13 @@
 #include "Cat/CatController.h"
 
 #include "CatAIController.h"
+#include "CatAnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
+#include "Objects/Chair.h"
 #include "Objects/CoffeeCup.h"
+#include "Subsystems/SeatingManager.h"
 #include "Utils/AttachUtils.h"
 
 // Sets default values
@@ -37,14 +39,18 @@ void ACatController::BeginPlay()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	
 	// TODO make a waypoint manager, will be useful once we want to get a random table
-	TArray<AActor*> Waypoints;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("CounterWaypoint"), Waypoints);
-	if (Waypoints.Num()) TargetLocation = Waypoints[0];
+	// TArray<AActor*> Waypoints;
+	// UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("CounterWaypoint"), Waypoints);
+	// if (Waypoints.Num()) TargetLocation = Waypoints[0];
+	
+	USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
+	
+	TargetChair = SeatingManager->RequestSeat(this);
 	
 	AIController = Cast<ACatAIController>(GetController());
-	if (TargetLocation && AIController)
+	if (TargetChair && AIController)
 	{
-		AIController->MoveToActor(TargetLocation, 50.0f);
+		AIController->MoveToLocation(TargetChair->TargetPosition->GetComponentLocation(), 0.1f);
 		AIController->CatController = this;
 	}
 	
@@ -82,15 +88,28 @@ AActor* ACatController::Interact(AActor* HeldObject)
 	return this;
 }
 
+// TODO rename to chair
 void ACatController::ArriveAtCounter()
 {
 	if (SpeechBubble)
 	{
 		SpeechBubble->SetVisibility(true);
 	}
+	// need to face chair first
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	FRotator FaceChairRotation = DirectionToChair.Rotation();
+	FaceChairRotation.Pitch = 0;
+	FaceChairRotation.Roll = 0;
+	SetActorRotation(FaceChairRotation);
+	if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->bIsJumping = true;
+	}
 	bWantsCoffee = true;
 }
 
+// TODO - the coffee will be placed on the table, and we will drink it
 void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 {
 	// Grab coffee
@@ -102,13 +121,14 @@ void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 	CoffeeCupToGrab->SetActorRotation(FRotator(0.0f, CurrentRotation.Yaw, 0.0f));
 	
 	// Move away (in future to table)
-	TArray<AActor*> Waypoints;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("ExitWaypoint"), Waypoints);
-	if (Waypoints.Num()) TargetLocation = Waypoints[0];
+	// TArray<AActor*> Waypoints;
+	// UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("ExitWaypoint"), Waypoints);
+	// if (Waypoints.Num()) TargetLocation = Waypoints[0];
 	
-	if (TargetLocation && AIController)
+	if (TargetChair && AIController)
 	{
-		AIController->MoveToActor(TargetLocation, 50.0f);
+		AIController->MoveToLocation(TargetChair->TargetPosition->GetComponentLocation(), 0.1f);
+		AIController->CatController = this;
 	}
 	
 	// Hide prompt

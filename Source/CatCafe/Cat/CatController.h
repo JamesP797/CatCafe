@@ -7,6 +7,7 @@
 #include "Interfaces/Interactable.h"
 #include "CatController.generated.h"
 
+class AChair;
 class ACatAIController;
 class ACoffeeCup;
 class UWidgetComponent;
@@ -21,7 +22,7 @@ private:
 	
 protected:
 	UPROPERTY()
-	AActor* TargetLocation;
+	AChair* TargetChair;
 	
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UWidgetComponent* SpeechBubble;
