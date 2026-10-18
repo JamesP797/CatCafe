@@ -58,6 +58,12 @@ void ACatController::BeginPlay()
 	{
 		SpeechBubble->SetVisibility(false);
 	}
+	
+	// if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+	// {
+	// 	AnimInstance->bIsJumping = true;
+	// 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	// }
 }
 
 // Called every frame
@@ -89,24 +95,41 @@ AActor* ACatController::Interact(AActor* HeldObject)
 }
 
 // TODO rename to chair
+// TODO nullsafe chair
 void ACatController::ArriveAtCounter()
 {
-	if (SpeechBubble)
-	{
-		SpeechBubble->SetVisibility(true);
-	}
 	// need to face chair first
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	FRotator FaceChairRotation = DirectionToChair.Rotation();
-	FaceChairRotation.Pitch = 0;
-	FaceChairRotation.Roll = 0;
-	SetActorRotation(FaceChairRotation);
-	if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+	if (TargetChair)
 	{
-		AnimInstance->bIsJumping = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		FRotator FaceChairRotation = DirectionToChair.Rotation();
+		FaceChairRotation.Pitch = 0;
+		FaceChairRotation.Roll = 0;
+		SetActorRotation(FaceChairRotation);
+		if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+			AnimInstance->bIsJumping = true;
+		}
 	}
-	bWantsCoffee = true;
+}
+
+void ACatController::OnJumpComplete()
+{
+	if (TargetChair)
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		SetActorRotation(TargetChair->GetActorRotation());
+		FVector TargetLocation = TargetChair->GetActorLocation();
+		TargetLocation.Z = GetActorLocation().Z;
+		SetActorLocation(TargetLocation);
+		if (SpeechBubble)
+		{
+			SpeechBubble->SetVisibility(true);
+		}
+		bWantsCoffee = true;
+	}
 }
 
 // TODO - the coffee will be placed on the table, and we will drink it

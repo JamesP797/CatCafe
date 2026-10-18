@@ -17,4 +17,7 @@ class CATCAFE_API UCatAnimInstance : public UAnimInstance
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "Animation")
 	bool bIsJumping = false;
+	
+	UFUNCTION()
+	void AnimNotify_JumpComplete();
 };

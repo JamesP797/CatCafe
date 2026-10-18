@@ -3,3 +3,13 @@
 
 #include "Cat/CatAnimInstance.h"
 
+#include "CatController.h"
+
+void UCatAnimInstance::AnimNotify_JumpComplete()
+{
+	ACatController* Cat = Cast<ACatController>(TryGetPawnOwner());
+	if (Cat)
+	{
+		Cat->OnJumpComplete();
+	}
+}

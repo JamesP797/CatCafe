@@ -52,4 +52,6 @@ public:
 	virtual bool IsPhysicsObject() override { return false; }
 	
 	void ArriveAtCounter();
+	
+	void OnJumpComplete();
 };
