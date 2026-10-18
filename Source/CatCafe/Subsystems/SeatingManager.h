@@ -17,9 +17,13 @@ class CATCAFE_API USeatingManager : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 public:
+	void RegisterSeat(AChair* Seat);
+	
 	AChair* RequestSeat(ACatController* Cat);
 	
 	void ReleaseSeat(AChair* Seat);
+	
+	bool CafeFull();
 	
 private:
 	void RegisterSeats();

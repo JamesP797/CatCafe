@@ -20,6 +20,9 @@ class CATCAFE_API ACatController : public ACharacter, public IInteractable
 private:
 	void ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab);
 	
+	UFUNCTION()
+	void OnCoffeeFinished();
+	
 protected:
 	UPROPERTY()
 	AChair* TargetChair;
@@ -34,6 +37,7 @@ protected:
 	USceneComponent* HoldPosition;
 	
 	bool bWantsCoffee = false;
+	bool bHadCoffee = false;
 	
 	UPROPERTY()
 	ACatAIController* AIController;
@@ -51,7 +55,9 @@ public:
 	
 	virtual bool IsPhysicsObject() override { return false; }
 	
-	void ArriveAtCounter();
+	void ArriveAtLocation();
 	
 	void OnJumpComplete();
+	
+	FVector SpawnPosition;
 };

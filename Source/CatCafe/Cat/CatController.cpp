@@ -12,11 +12,12 @@
 #include "Objects/CoffeeCup.h"
 #include "Subsystems/SeatingManager.h"
 #include "Utils/AttachUtils.h"
+#include "Engine/GameInstance.h"
+#include "NavigationSystem.h"
+#include "Kismet/GameplayStatics.h"
 
-// Sets default values
 ACatController::ACatController()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -29,7 +30,6 @@ ACatController::ACatController()
 	HoldPosition->SetupAttachment(RootComponent);
 }
 
-// Called when the game starts or when spawned
 void ACatController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,38 +38,30 @@ void ACatController::BeginPlay()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	
-	// TODO make a waypoint manager, will be useful once we want to get a random table
-	// TArray<AActor*> Waypoints;
-	// UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("CounterWaypoint"), Waypoints);
-	// if (Waypoints.Num()) TargetLocation = Waypoints[0];
-	
 	USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
-	
 	TargetChair = SeatingManager->RequestSeat(this);
 	
 	AIController = Cast<ACatAIController>(GetController());
 	if (TargetChair && AIController)
 	{
-		AIController->MoveToLocation(TargetChair->TargetPosition->GetComponentLocation(), 0.1f);
 		AIController->CatController = this;
+		AIController->MoveToLocation(TargetChair->TargetPosition->GetComponentLocation(), 0.1f);
 	}
 	
-	if (SpeechBubble)
-	{
-		SpeechBubble->SetVisibility(false);
-	}
-	
-	// if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
-	// {
-	// 	AnimInstance->bIsJumping = true;
-	// 	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-	// }
+	if (SpeechBubble) SpeechBubble->SetVisibility(false);
 }
 
-// Called every frame
 void ACatController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	// TODO store this on BeginPlay rather than recomputing every tick
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC && PC->GetPawn())
+	{
+		FVector PlayerLocation = PC->GetPawn()->GetActorLocation();
+		SpeechBubble->SetWorldRotation((PlayerLocation - SpeechBubble->GetComponentLocation()).Rotation());
+	}
 }
 
 FInteractEligibility* ACatController::CanInteract(AActor* HeldObject)
@@ -77,7 +69,7 @@ FInteractEligibility* ACatController::CanInteract(AActor* HeldObject)
 	if (ACoffeeCup* CoffeeCupToGrab = Cast<ACoffeeCup>(HeldObject))
 	{
 		return new FInteractEligibility(!CoffeeCup 
-			&& CoffeeCupToGrab->IsFull() 
+			// && CoffeeCupToGrab->IsFull() 
 			&& bWantsCoffee, 
 			FText::FromString("Give coffee"));
 	}
@@ -94,24 +86,28 @@ AActor* ACatController::Interact(AActor* HeldObject)
 	return this;
 }
 
-// TODO rename to chair
-// TODO nullsafe chair
-void ACatController::ArriveAtCounter()
+void ACatController::ArriveAtLocation()
 {
-	// need to face chair first
-	if (TargetChair)
+	if (!bHadCoffee)
 	{
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		FRotator FaceChairRotation = DirectionToChair.Rotation();
-		FaceChairRotation.Pitch = 0;
-		FaceChairRotation.Roll = 0;
-		SetActorRotation(FaceChairRotation);
-		if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+		if (TargetChair)
 		{
-			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-			AnimInstance->bIsJumping = true;
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			FRotator FaceChairRotation = DirectionToChair.Rotation();
+			FaceChairRotation.Pitch = 0;
+			FaceChairRotation.Roll = 0;
+			SetActorRotation(FaceChairRotation);
+			if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+			{
+				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+				AnimInstance->bIsJumping = true;
+			}
 		}
+	}
+	else
+	{
+		Destroy();
 	}
 }
 
@@ -129,6 +125,19 @@ void ACatController::OnJumpComplete()
 			SpeechBubble->SetVisibility(true);
 		}
 		bWantsCoffee = true;
+		if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			AnimInstance->bIsJumping = false;
+		}
+	}
+	else
+	{
+		if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+		{
+			AnimInstance->bIsJumping = false;
+		}
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		AIController->MoveToLocation(SpawnPosition, 5.0f);
 	}
 }
 
@@ -143,20 +152,35 @@ void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 	FRotator CurrentRotation = CoffeeCupToGrab->GetActorRotation();
 	CoffeeCupToGrab->SetActorRotation(FRotator(0.0f, CurrentRotation.Yaw, 0.0f));
 	
-	// Move away (in future to table)
-	// TArray<AActor*> Waypoints;
-	// UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("ExitWaypoint"), Waypoints);
-	// if (Waypoints.Num()) TargetLocation = Waypoints[0];
-	
-	if (TargetChair && AIController)
-	{
-		AIController->MoveToLocation(TargetChair->TargetPosition->GetComponentLocation(), 0.1f);
-		AIController->CatController = this;
-	}
-	
 	// Hide prompt
 	if (SpeechBubble)
 	{
 		SpeechBubble->SetVisibility(false);
+	}
+	
+	CoffeeCup->OnFillableEmpty.AddDynamic(this, &ACatController::OnCoffeeFinished);
+	CoffeeCup->Drain(0.0f, 1.0f);
+}
+
+void ACatController::OnCoffeeFinished()
+{
+
+	AttachUtils::SetCollisionOfHeld(CoffeeCup, true);
+	// Crash here?
+	CoffeeCup->DetachFromActor(AttachUtils::GetDropDetachmentRules());
+	CoffeeCup = nullptr;
+	
+	if (AIController)
+	{
+		USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
+		SeatingManager->ReleaseSeat(TargetChair);
+		TargetChair = nullptr;
+	}
+	
+	// Jump off the chair. In future this needs to be a different animation
+	AddActorLocalRotation(FRotator(0.0f, 90.0f, 0.0f));
+	if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+	{
+		AnimInstance->bIsJumping = true;
 	}
 }

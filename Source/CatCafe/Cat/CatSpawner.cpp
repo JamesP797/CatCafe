@@ -3,7 +3,10 @@
 
 #include "Cat/CatSpawner.h"
 
+#include "CatController.h"
 #include "Engine/World.h"
+#include "Subsystems/SeatingManager.h"
+#include "Engine/GameInstance.h"
 
 // Sets default values
 ACatSpawner::ACatSpawner()
@@ -26,7 +29,9 @@ void ACatSpawner::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	TimeToSpawn -= DeltaTime;
-	if (TimeToSpawn <= 0)
+	
+	USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
+	if (TimeToSpawn <= 0 && SeatingManager && !SeatingManager->CafeFull())
 	{
 		TimeToSpawn = SpawnCooldown;
 		SpawnCat();
@@ -35,6 +40,7 @@ void ACatSpawner::Tick(float DeltaTime)
 
 void ACatSpawner::SpawnCat()
 {
-	GetWorld()->SpawnActor<AActor>(CatBlueprint, GetActorLocation(), GetActorRotation());
+	ACatController* Cat = GetWorld()->SpawnActor<ACatController>(CatBlueprint, GetActorLocation(), GetActorRotation());
+	Cat->SpawnPosition = GetActorLocation();
 }
 

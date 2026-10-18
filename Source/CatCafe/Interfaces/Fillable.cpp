@@ -108,6 +108,12 @@ void AFillable::Drain(float Target)
 	Transferring = true;
 }
 
+void AFillable::Drain(float Target, float TargetSpeed)
+{
+	Speed = TargetSpeed;
+	Drain(Target);
+}
+
 void AFillable::Empty()
 {
 	FVector ContentsSurfaceLocation = ContentsSurface->GetRelativeLocation();
@@ -124,6 +130,7 @@ void AFillable::Empty()
 void AFillable::Stop()
 {
 	Transferring = false;
+	if (IsEmpty()) OnFillableEmpty.Broadcast();
 }
 
 bool AFillable::IsFull() const

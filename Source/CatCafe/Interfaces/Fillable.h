@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Fillable.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFillableEmpty);
+
 UCLASS(Abstract)
 class CATCAFE_API AFillable : public AActor
 {
@@ -62,6 +64,8 @@ public:
 	void Drain();
 	
 	void Drain(float Target);
+	
+	void Drain(float Target, float TargetSpeed);
 
 	void Empty();
 
@@ -74,4 +78,7 @@ public:
 	float GetContentsLevel() const;
 
 	bool Transferring = false;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnFillableEmpty OnFillableEmpty;
 };

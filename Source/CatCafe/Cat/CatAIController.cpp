@@ -9,6 +9,6 @@ void ACatAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollow
 	
 	if (CatController)
 	{
-		CatController->ArriveAtCounter();
+		CatController->ArriveAtLocation();
 	}
 }

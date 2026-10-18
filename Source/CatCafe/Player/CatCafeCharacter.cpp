@@ -175,6 +175,7 @@ void ACatCafeCharacter::Interact()
 		}
 		HeldObject->DetachFromActor(AttachUtils::GetDropDetachmentRules());
 		HeldObject = nullptr;
+		// TODO place at reticule (raycast) rather than in air
 	}
 }
 

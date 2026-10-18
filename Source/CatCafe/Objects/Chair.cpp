@@ -3,6 +3,8 @@
 
 #include "Objects/Chair.h"
 
+#include "Subsystems/SeatingManager.h"
+
 // Sets default values
 AChair::AChair()
 {
@@ -22,6 +24,8 @@ void AChair::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
+	SeatingManager->RegisterSeat(this);
 }
 
 // Called every frame

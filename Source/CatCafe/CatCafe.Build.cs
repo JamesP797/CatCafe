@@ -19,7 +19,8 @@ public class CatCafe : ModuleRules
 			"GameplayStateTreeModule",
 			"UMG",
 			"Slate",
-			"Niagara"
+			"Niagara",
+			"NavigationSystem"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
