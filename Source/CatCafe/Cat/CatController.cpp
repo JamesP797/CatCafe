@@ -113,10 +113,8 @@ void ACatController::ArriveAtLocation()
 
 void ACatController::OnJumpComplete()
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnJumpComplete"));
 	if (TargetChair)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TargetChair"));
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		SetActorRotation(TargetChair->GetActorRotation());
 		FVector TargetLocation = TargetChair->GetActorLocation();

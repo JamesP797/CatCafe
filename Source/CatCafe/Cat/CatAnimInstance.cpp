@@ -10,7 +10,6 @@ void UCatAnimInstance::AnimNotify_JumpComplete()
 	ACatController* Cat = Cast<ACatController>(TryGetPawnOwner());
 	if (Cat)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Jump completed"));
 		Cat->OnJumpComplete();
 	}
 }
