@@ -29,16 +29,22 @@ void AFillable::BeginPlay()
 			ContentsContainer->SetRenderCustomDepth(true);
 			ContentsContainer->SetCustomDepthStencilValue(StencilIndex);
 
-			if (UMaterialInstanceDynamic* SurfaceMaterial = ContentsSurface->CreateAndSetMaterialInstanceDynamic(0))
-				SurfaceMaterial->SetScalarParameterValue(TEXT("StencilValue"), StencilIndex);
+			if (ContentsSurface->GetStaticMesh())
+			{
+				if (UMaterialInstanceDynamic* SurfaceMaterial = ContentsSurface->CreateAndSetMaterialInstanceDynamic(0))
+					SurfaceMaterial->SetScalarParameterValue(TEXT("StencilValue"), StencilIndex);
+			}
 
 			// Applicable for objects with transparent bodies, with surfaces that do not mask
 			ContentsMask->SetRenderCustomDepth(true);
 			ContentsMask->SetCustomDepthStencilValue(StencilIndex);
 
-			ContentsBody->SetTranslucentSortPriority(10);
-			if (UMaterialInstanceDynamic* SurfaceMaterial = ContentsBody->CreateAndSetMaterialInstanceDynamic(0))
-				SurfaceMaterial->SetScalarParameterValue(TEXT("StencilValue"), StencilIndex);
+			if (ContentsBody->GetStaticMesh())
+			{
+				ContentsBody->SetTranslucentSortPriority(10);
+				if (UMaterialInstanceDynamic* SurfaceMaterial = ContentsBody->CreateAndSetMaterialInstanceDynamic(0))
+					SurfaceMaterial->SetScalarParameterValue(TEXT("StencilValue"), StencilIndex);
+			}
 		}
 	}
 }
