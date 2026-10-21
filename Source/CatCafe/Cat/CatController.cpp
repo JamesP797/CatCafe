@@ -164,9 +164,8 @@ void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 
 void ACatController::OnCoffeeFinished()
 {
-
+	CoffeeCup->OnFillableEmpty.RemoveDynamic(this, &ACatController::OnCoffeeFinished);
 	AttachUtils::SetCollisionOfHeld(CoffeeCup, true);
-	// Crash here?
 	CoffeeCup->DetachFromActor(AttachUtils::GetDropDetachmentRules());
 	CoffeeCup = nullptr;
 	
