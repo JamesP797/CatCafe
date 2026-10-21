@@ -21,6 +21,7 @@ void ACatSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
 }
 
 // Called every frame
@@ -30,7 +31,6 @@ void ACatSpawner::Tick(float DeltaTime)
 	
 	TimeToSpawn -= DeltaTime;
 	
-	USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
 	if (TimeToSpawn <= 0 && SeatingManager && !SeatingManager->CafeFull())
 	{
 		TimeToSpawn = SpawnCooldown;

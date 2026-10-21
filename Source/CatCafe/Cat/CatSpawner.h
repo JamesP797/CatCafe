@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "CatSpawner.generated.h"
 
+class USeatingManager;
+
 UCLASS()
 class CATCAFE_API ACatSpawner : public AActor
 {
@@ -13,6 +15,9 @@ class CATCAFE_API ACatSpawner : public AActor
 	
 private:
 	float TimeToSpawn = 0.0f;
+	
+	UPROPERTY()
+	USeatingManager* SeatingManager;
 
 protected:
 	// Called when the game starts or when spawned

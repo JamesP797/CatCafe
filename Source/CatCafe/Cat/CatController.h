@@ -7,6 +7,8 @@
 #include "Interfaces/Interactable.h"
 #include "CatController.generated.h"
 
+class UCatAnimInstance;
+class USeatingManager;
 class AChair;
 class ACatAIController;
 class ACoffeeCup;
@@ -22,6 +24,15 @@ private:
 	
 	UFUNCTION()
 	void OnCoffeeFinished();
+	
+	UPROPERTY()
+	USeatingManager* SeatingManager;
+	
+	UPROPERTY()
+	APlayerController* PlayerController;
+	
+	UPROPERTY()
+	UCatAnimInstance* AnimInstance;
 	
 protected:
 	UPROPERTY()

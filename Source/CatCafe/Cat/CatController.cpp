@@ -38,7 +38,7 @@ void ACatController::BeginPlay()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	
-	USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
+	SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
 	TargetChair = SeatingManager->RequestSeat(this);
 	
 	AIController = Cast<ACatAIController>(GetController());
@@ -49,17 +49,19 @@ void ACatController::BeginPlay()
 	}
 	
 	if (SpeechBubble) SpeechBubble->SetVisibility(false);
+	
+	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	
+	AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance());
 }
 
 void ACatController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	// TODO store this on BeginPlay rather than recomputing every tick
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PC && PC->GetPawn())
+	if (PlayerController && PlayerController->GetPawn())
 	{
-		FVector PlayerLocation = PC->GetPawn()->GetActorLocation();
+		const FVector PlayerLocation = PlayerController->GetPawn()->GetActorLocation();
 		SpeechBubble->SetWorldRotation((PlayerLocation - SpeechBubble->GetComponentLocation()).Rotation());
 	}
 }
@@ -93,22 +95,19 @@ void ACatController::ArriveAtLocation()
 		if (TargetChair)
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = false;
-			FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			const FVector DirectionToChair = (TargetChair->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 			FRotator FaceChairRotation = DirectionToChair.Rotation();
 			FaceChairRotation.Pitch = 0;
 			FaceChairRotation.Roll = 0;
 			SetActorRotation(FaceChairRotation);
-			if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
+			if (AnimInstance)
 			{
 				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 				AnimInstance->bIsJumping = true;
 			}
 		}
 	}
-	else
-	{
-		Destroy();
-	}
+	else Destroy();
 }
 
 void ACatController::OnJumpComplete()
@@ -120,28 +119,19 @@ void ACatController::OnJumpComplete()
 		FVector TargetLocation = TargetChair->GetActorLocation();
 		TargetLocation.Z = GetActorLocation().Z;
 		SetActorLocation(TargetLocation);
-		if (SpeechBubble)
-		{
-			SpeechBubble->SetVisibility(true);
-		}
+		
+		if (SpeechBubble) SpeechBubble->SetVisibility(true);
 		bWantsCoffee = true;
-		if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
-		{
-			AnimInstance->bIsJumping = false;
-		}
+		if (AnimInstance) AnimInstance->bIsJumping = false;
 	}
 	else
 	{
-		if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
-		{
-			AnimInstance->bIsJumping = false;
-		}
+		if (AnimInstance) AnimInstance->bIsJumping = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		AIController->MoveToLocation(SpawnPosition, 5.0f);
 	}
 }
 
-// TODO - the coffee will be placed on the table, and we will drink it
 void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 {
 	// Grab coffee
@@ -153,10 +143,7 @@ void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 	CoffeeCupToGrab->SetActorRotation(FRotator(0.0f, CurrentRotation.Yaw, 0.0f));
 	
 	// Hide prompt
-	if (SpeechBubble)
-	{
-		SpeechBubble->SetVisibility(false);
-	}
+	if (SpeechBubble) SpeechBubble->SetVisibility(false);
 	
 	CoffeeCup->OnFillableEmpty.AddDynamic(this, &ACatController::OnCoffeeFinished);
 	CoffeeCup->Drain(0.0f, 1.0f);
@@ -169,17 +156,12 @@ void ACatController::OnCoffeeFinished()
 	CoffeeCup->DetachFromActor(AttachUtils::GetDropDetachmentRules());
 	CoffeeCup = nullptr;
 	
-	if (AIController)
+	if (AIController && SeatingManager)
 	{
-		USeatingManager* SeatingManager = GetGameInstance()->GetSubsystem<USeatingManager>();
 		SeatingManager->ReleaseSeat(TargetChair);
 		TargetChair = nullptr;
 	}
 	
-	// Jump off the chair. In future this needs to be a different animation
 	AddActorLocalRotation(FRotator(0.0f, 90.0f, 0.0f));
-	if (UCatAnimInstance* AnimInstance = Cast<UCatAnimInstance>(GetMesh()->GetAnimInstance()))
-	{
-		AnimInstance->bIsJumping = true;
-	}
+	if (AnimInstance) AnimInstance->bIsJumping = true;
 }
