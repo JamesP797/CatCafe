@@ -59,10 +59,48 @@ void ACatController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (PlayerController && PlayerController->GetPawn())
+	if (PlayerController && PlayerController->GetPawn() && bWantsCoffee)
 	{
 		const FVector PlayerLocation = PlayerController->GetPawn()->GetActorLocation();
 		SpeechBubble->SetWorldRotation((PlayerLocation - SpeechBubble->GetComponentLocation()).Rotation());
+	}
+	
+	if (bTurning)
+	{
+		const FRotator CurrentRotation = GetActorRotation();
+		if (!TargetRotation.IsZero())
+		{
+			const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 3.0f);
+			SetActorRotation(NewRotation);
+		}
+		
+		const FVector CurrentLocation = GetActorLocation();
+		if (!TargetLocation.IsZero())
+		{
+			const FVector NewLocation = FMath::VInterpTo(CurrentLocation, TargetLocation, DeltaTime, 10.0f);
+			SetActorLocation(NewLocation);
+		}
+		
+		if ((TargetRotation.IsZero() || CurrentRotation.Equals(TargetRotation, 1.0f)) && (TargetLocation.IsZero() || CurrentLocation.Equals(TargetLocation, 8.0f)))
+		{
+			if (!bOnChair)
+			{
+				// Trigger jump
+				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+				if (AnimInstance) AnimInstance->bIsJumping = true;
+			}
+			else if (bOnChair && !bHadCoffee)
+			{
+			}
+			else if (bOnChair && bHadCoffee)
+			{
+				// Trigger jump off chair
+				if (AnimInstance) AnimInstance->bIsJumping = true;
+			}
+			bTurning = false;
+			TargetLocation = FVector(0.0f, 0.0f, 0.0f);
+			TargetRotation = FRotator(0.0f, 0.0f, 0.0f);
+		}
 	}
 }
 
@@ -99,12 +137,9 @@ void ACatController::ArriveAtLocation()
 			FRotator FaceChairRotation = DirectionToChair.Rotation();
 			FaceChairRotation.Pitch = 0;
 			FaceChairRotation.Roll = 0;
-			SetActorRotation(FaceChairRotation);
-			if (AnimInstance)
-			{
-				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-				AnimInstance->bIsJumping = true;
-			}
+			// SetActorRotation(FaceChairRotation);
+			TargetRotation = FaceChairRotation;
+			bTurning = true;
 		}
 	}
 	else Destroy();
@@ -115,27 +150,34 @@ void ACatController::OnJumpComplete()
 	if (TargetChair)
 	{
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		SetActorRotation(TargetChair->GetActorRotation());
-		FVector TargetLocation = TargetChair->GetActorLocation();
+		bTurning = true;
+		TargetLocation = TargetChair->GetActorLocation();
 		TargetLocation.Z = GetActorLocation().Z;
-		SetActorLocation(TargetLocation);
+		TargetRotation = TargetChair->GetActorRotation();
 		
-		if (SpeechBubble) SpeechBubble->SetVisibility(true);
-		bWantsCoffee = true;
 		if (AnimInstance) AnimInstance->bIsJumping = false;
+		if (AnimInstance) AnimInstance->bIsSitting = true;
+		bOnChair = true;
 	}
 	else
 	{
 		if (AnimInstance) AnimInstance->bIsJumping = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
-		AIController->MoveToLocation(SpawnPosition, 5.0f);
+		if (AIController) AIController->MoveToLocation(SpawnPosition, 5.0f);
 	}
+}
+
+void ACatController::OnSitComplete()
+{
+	if (SpeechBubble) SpeechBubble->SetVisibility(true);
+	bWantsCoffee = true;
 }
 
 void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 {
 	// Grab coffee
 	bWantsCoffee = false;
+	if (AnimInstance) AnimInstance->bIsDrinking = true;
 	CoffeeCup = CoffeeCupToGrab;
 	AttachUtils::SetCollisionOfHeld(CoffeeCup, false);
 	CoffeeCupToGrab->AttachToComponent(HoldPosition, AttachUtils::GetPickupAttachRules());
@@ -162,6 +204,12 @@ void ACatController::OnCoffeeFinished()
 		TargetChair = nullptr;
 	}
 	
-	AddActorLocalRotation(FRotator(0.0f, 90.0f, 0.0f));
-	if (AnimInstance) AnimInstance->bIsJumping = true;
+	bHadCoffee = true;
+	TargetRotation = (FRotator(0.0f, 90.0f, 0.0f).Quaternion() * GetActorRotation().Quaternion()).Rotator();
+	bTurning = true;
+	if (AnimInstance)
+	{
+		AnimInstance->bIsSitting = false;
+		AnimInstance->bIsDrinking = false;
+	}
 }

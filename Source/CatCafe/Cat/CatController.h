@@ -34,6 +34,11 @@ private:
 	UPROPERTY()
 	UCatAnimInstance* AnimInstance;
 	
+	bool bTurning = false;
+	bool bOnChair = false;
+	FVector TargetLocation;
+	FRotator TargetRotation;
+	
 protected:
 	UPROPERTY()
 	AChair* TargetChair;
@@ -69,6 +74,8 @@ public:
 	void ArriveAtLocation();
 	
 	void OnJumpComplete();
+	
+	void OnSitComplete();
 	
 	FVector SpawnPosition;
 };

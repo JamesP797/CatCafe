@@ -13,3 +13,12 @@ void UCatAnimInstance::AnimNotify_JumpComplete()
 		Cat->OnJumpComplete();
 	}
 }
+
+void UCatAnimInstance::AnimNotify_SitComplete()
+{
+	ACatController* Cat = Cast<ACatController>(TryGetPawnOwner());
+	if (Cat)
+	{
+		Cat->OnSitComplete();
+	}
+}

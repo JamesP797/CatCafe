@@ -18,6 +18,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Animation")
 	bool bIsJumping = false;
 	
+	UPROPERTY(BlueprintReadWrite, Category = "Animation")
+	bool bIsSitting = false;
+	
+	UPROPERTY(BlueprintReadWrite, Category = "Animation")
+	bool bIsDrinking = false;
+	
 	UFUNCTION()
 	void AnimNotify_JumpComplete();
+	
+	UFUNCTION()
+	void AnimNotify_SitComplete();
 };
