@@ -23,8 +23,6 @@ protected:
 
 	UPROPERTY()
 	ACoffeeMachine* CoffeeMachine;
-	
-	void Tamp();
 
 public:
 	APortafilter();
@@ -36,6 +34,8 @@ public:
 	virtual AActor* Interact(AActor* HeldObject) override;
 
 	virtual bool IsPhysicsObject() override { return true; }
+	
+	void Tamp();
 	
 	bool IsTamped = false;
 	

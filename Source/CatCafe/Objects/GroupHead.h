@@ -21,6 +21,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* InteractionVolume;
+	
+	UPROPERTY(EditAnywhere)
+	float InteractionRadius = 5.0f;
 
 public:
 	AGroupHead();

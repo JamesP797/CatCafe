@@ -32,6 +32,8 @@ class ACatCafeCharacter : public ACharacter
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
+	
+	FVector CalculatePlacePosition();
 
 protected:
 	/**
