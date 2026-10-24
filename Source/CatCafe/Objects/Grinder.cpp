@@ -5,6 +5,7 @@
 
 #include "NiagaraComponent.h"
 #include "Portafilter.h"
+#include "Tamper.h"
 #include "Components/StaticMeshComponent.h"
 #include "Utils/AttachUtils.h"
 
@@ -63,6 +64,10 @@ FInteractEligibility* AGrinder::CanInteract(AActor* HeldObject)
 	{
 		return new FInteractEligibility(true, FText::FromString("Retrieve portafilter"));
 	}
+	if (Portafilter && Portafilter->IsFull() && HeldObject && Cast<ATamper>(HeldObject))
+	{
+		return new FInteractEligibility(true, FText::FromString("Tamp grounds"));
+	}
 	if (APortafilter* PortafilterToPlace = Cast<APortafilter>(HeldObject))
 	{
 		return new FInteractEligibility(!Portafilter, FText::FromString("Place portafilter"));
@@ -87,7 +92,13 @@ AActor* AGrinder::Interact(AActor* HeldObject)
 		return HeldObject;
 	}
 	
-	if (Portafilter)
+	if (Portafilter && Cast<ATamper>(HeldObject))
+	{
+		Portafilter->Tamp();
+		return HeldObject;
+	}
+		
+	if (Portafilter && !HeldObject)
 	{
 		AActor* PortafilterToRetrieve = Portafilter;
 		Portafilter = nullptr;

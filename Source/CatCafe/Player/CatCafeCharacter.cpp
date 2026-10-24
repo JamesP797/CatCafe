@@ -14,6 +14,8 @@
 #include "Interfaces/Interactable.h"
 #include "UI/CatCafeHUD.h"
 #include "Blueprint/UserWidget.h"
+#include "Interfaces/Fillable.h"
+#include "Engine/OverlapResult.h"
 
 ACatCafeCharacter::ACatCafeCharacter()
 {
@@ -174,9 +176,62 @@ void ACatCafeCharacter::Interact()
 			AttachUtils::SetCollisionOfHeld(HeldObject, true);
 		}
 		HeldObject->DetachFromActor(AttachUtils::GetDropDetachmentRules());
+		
+		FVector PlaceLocation = CalculatePlacePosition();
+		
+		HeldObject->SetActorLocation(PlaceLocation);
 		HeldObject = nullptr;
-		// TODO place at reticule (raycast) rather than in air
 	}
+}
+
+FVector ACatCafeCharacter::CalculatePlacePosition()
+{
+	// Get the camera location and direction
+	const FVector CameraLocation = FirstPersonCameraComponent->GetComponentLocation();
+	const FVector InFrontOfCamera = CameraLocation + FirstPersonCameraComponent->GetForwardVector() * 125.0f;
+
+	// Do the raycast
+	FHitResult HitResult;
+		
+	FVector PlaceLocation;
+	float ApproxHeight = HeldObject->GetRootComponent()->Bounds.BoxExtent.Z;
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, InFrontOfCamera, ECC_Visibility, InteractRaycastQueryParams))
+		PlaceLocation = HitResult.ImpactPoint + FVector(0.0f, 0.0f, ApproxHeight);
+	else
+	{
+		const FVector SurfaceInFrontOfPlayer = InFrontOfCamera + FVector(0.0f, 0.0f, -100.0f);
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, InFrontOfCamera, SurfaceInFrontOfPlayer, ECC_Visibility, InteractRaycastQueryParams))
+			PlaceLocation = HitResult.ImpactPoint + FVector(0.0f, 0.0f, ApproxHeight);
+		else PlaceLocation = InFrontOfCamera;
+	}
+		
+	// TODO get this working
+	// FVector CandidatePos = PlaceLocation;
+	// float ObjectRadius = HeldObject->GetRootComponent()->Bounds.BoxExtent.X;
+	//
+	// for (int32 i = 0; i < 1; i++) // max iterations
+	// {
+	// 	TArray<FOverlapResult> Overlaps;
+	// 	FCollisionShape Sphere = FCollisionShape::MakeSphere(ObjectRadius);
+ //    
+	// 	bool bOverlapping = GetWorld()->OverlapMultiByChannel(
+	// 		Overlaps, CandidatePos, FQuat::Identity, ECC_WorldDynamic, Sphere);
+ //        
+	// 	if (!bOverlapping) break;
+ //    
+	// 	FVector Repulsion = FVector::ZeroVector;
+	// 	for (const FOverlapResult& Overlap : Overlaps)
+	// 	{
+	// 		FVector Direction = (CandidatePos - Overlap.GetActor()->GetActorLocation()).GetSafeNormal2D();
+	// 		Repulsion += Direction * ObjectRadius;
+	// 	}
+ //    
+	// 	CandidatePos += Repulsion;
+	// 	CandidatePos.Z = PlaceLocation.Z;
+	// }
+	
+	return PlaceLocation;
 }
 
 void ACatCafeCharacter::MoveInput(const FInputActionValue& Value)

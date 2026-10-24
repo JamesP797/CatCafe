@@ -16,7 +16,7 @@ AGroupHead::AGroupHead()
 	InteractionVolume = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionVolume"));
 	RootComponent = InteractionVolume;
 
-	InteractionVolume->SetSphereRadius(5.0f);
+	InteractionVolume->SetSphereRadius(InteractionRadius);
 	InteractionVolume->SetCollisionProfileName(TEXT("Custom"));
 	InteractionVolume->SetCollisionResponseToAllChannels(ECR_Ignore);
 	InteractionVolume->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -27,6 +27,8 @@ void AGroupHead::BeginPlay()
 {
 	Super::BeginPlay();
 
+	InteractionVolume->SetSphereRadius(InteractionRadius);
+	
 	if (const UActorComponent* ParentComp = GetParentComponent())
 		CoffeeMachine = Cast<ACoffeeMachine>(
 			ParentComp->GetOwner());
