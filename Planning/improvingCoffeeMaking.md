@@ -1,0 +1,9 @@
+﻿- [ ] Streamlining
+    - [x] Place objects in front of you, not in their current location
+    - [ ] Auto place object to nearest free space if other objects are nearby
+    - [x] Add ability to tamp while in grinder
+    - [x] Increase radius of trigger volumes
+- [ ] Improving
+    - [ ] Objects smash and/or drop contents on floor if dropped
+    - [ ] You need to wait for fill to happen before interacting/dropping object
+    - [ ] Avoiding collisions of invisible meshes under objects

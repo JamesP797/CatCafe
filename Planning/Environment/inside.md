@@ -1,0 +1,6 @@
+- [ ] Roof beams
+- [x] Chairs
+- [x] Tables
+- [ ] Bookshelves
+- [ ] Plants
+- [ ] Lamps

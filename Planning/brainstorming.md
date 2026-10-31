@@ -1,0 +1,23 @@
+- First person, stationary
+- Form of a restaurant simulator
+- Espresso coffee machine simulator
+    - Grind beans
+    - Tamp
+    - Extraction
+    - Frothing milk
+- Make lots of different types of coffee depending on the order
+- Each phase of making coffee is like a minigame, and how you perform determines the quality
+- Quality determines how much you get paid
+- Use money to buy new machines? Upgrade cafe?
+- Cats come up to order
+- Story elements - cats talk to you about random stuff
+- Maybe have book element to it - if you make a customer happy enough they give you a book for their collection
+- You could give book recommendations to cats
+- Cats jump on bench and cause trouble
+- Cats trip you, make you drop stuff
+
+## Skill tree
+- Makes game fun and deep. Skill ideas:
+  - hold multiple coffees
+  - throw coffees
+  - spring/wallrun/slide

@@ -1,0 +1,2 @@
+- [ ] Rain effect on window sill
+- [ ] Cars driving past

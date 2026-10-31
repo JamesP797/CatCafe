@@ -1,0 +1,16 @@
+﻿- [ ] Improve environment (see ./Environment)
+- [ ] Sound effects
+  - [ ] Pickup/place sound
+  - [ ] Cats meowing
+  - [ ] Coffee machine sounds
+  - [ ] Walking sound
+  - [ ] Coin sound
+- [ ] Additional coffee items
+  - [ ] Espresso
+  - [ ] Ice coffee
+- [ ] Game loop
+  - [ ] Clock
+  - [ ] Opening cafe
+  - [ ] Day finishing, with summary
+  - [ ] Fade to black to start next day
+  - [ ] Day/night cycles?
