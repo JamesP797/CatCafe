@@ -57,6 +57,9 @@ protected:
 	
 	UPROPERTY()
 	ACatAIController* AIController;
+	
+	UPROPERTY(EditAnywhere, Category = "Configuration")
+	TSubclassOf<AActor> CoinBlueprint;
 
 public:
 	virtual void BeginPlay() override;

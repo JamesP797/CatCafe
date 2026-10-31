@@ -22,4 +22,18 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* InteractIcon;
+	
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* CoinCount;
+
+protected:
+	virtual void NativeConstruct() override;
+
+	virtual void NativeDestruct() override;
+
+private:
+	UFUNCTION()
+	void OnCoinCountChanged(int32 NewCoinCount);
+
+	void UpdateCoinCount(int32 NewCoinCount);
 };

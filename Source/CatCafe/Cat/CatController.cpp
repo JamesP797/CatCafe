@@ -15,6 +15,8 @@
 #include "Engine/GameInstance.h"
 #include "NavigationSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Objects/Coin.h"
+#include "Subsystems/CatCafeGameState.h"
 
 ACatController::ACatController()
 {
@@ -189,6 +191,13 @@ void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 	
 	CoffeeCup->OnFillableEmpty.AddDynamic(this, &ACatController::OnCoffeeFinished);
 	CoffeeCup->Drain(0.0f, 1.0f);
+	
+	GetWorld()->SpawnActor<ACoin>(CoinBlueprint, GetActorLocation() + FVector(0.0f, 0.0f, 5.0f), FRotator(0.0f, 0.0f, 0.0f));
+
+	if (ACatCafeGameState* GameState = GetWorld()->GetGameState<ACatCafeGameState>())
+	{
+		GameState->AddCoins(1);
+	}
 }
 
 void ACatController::OnCoffeeFinished()
