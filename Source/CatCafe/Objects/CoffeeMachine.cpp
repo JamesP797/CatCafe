@@ -50,6 +50,20 @@ void ACoffeeMachine::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// The cup may be picked up directly rather than through the machine's
+	// Retrieve prompt. Clear our reference as soon as it leaves the machine.
+	if (CoffeeCup && (!IsValid(CoffeeCup) || CoffeeCup->GetAttachParentActor() != this))
+	{
+		if (Pouring)
+		{
+			DripLeft->Deactivate();
+			DripRight->Deactivate();
+			Pouring = false;
+		}
+
+		CoffeeCup = nullptr;
+	}
+
 	if (Pouring && CoffeeCup && !CoffeeCup->Transferring)
 	{
 		DripLeft->Deactivate();
@@ -95,7 +109,7 @@ void ACoffeeMachine::PourCoffee()
 {
 	if (!CoffeeCup) return;
 
-	CoffeeCup->FillUp(0.5f);
+	CoffeeCup->FillWithEspresso(0.5f);
 	DripLeft->Activate(true);
 	DripRight->Activate(true);
 	Pouring = true;

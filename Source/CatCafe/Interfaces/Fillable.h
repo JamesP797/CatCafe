@@ -74,6 +74,9 @@ public:
 	bool IsFull() const;
 
 	bool IsEmpty() const;
+
+	/** Whether this fillable contains a finished drink that can be served. */
+	virtual bool IsReadyToServe() const { return false; }
 	
 	float GetContentsLevel() const;
 

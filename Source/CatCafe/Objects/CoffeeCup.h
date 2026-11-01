@@ -20,6 +20,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* OuterCup;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Contents")
+	bool bContainsEspresso = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Contents")
+	bool bContainsMilk = false;
+
 public:
 	ACoffeeCup();
 
@@ -28,6 +34,16 @@ public:
 	virtual FInteractEligibility* CanInteract(AActor* HeldObject) override;
 
 	virtual AActor* Interact(AActor* HeldObject) override;
+
+	virtual void Stop() override;
+
+	void FillWithEspresso(float Amount = 0.5f);
+
+	void AddMilk();
+
+	bool IsEspressoOnly() const { return bContainsEspresso && !bContainsMilk; }
+
+	virtual bool IsReadyToServe() const override { return bContainsEspresso && !Transferring && GetContentsLevel() > 0.0f; }
 
 	virtual bool IsPhysicsObject() override { return true; }
 };

@@ -8,8 +8,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Interfaces/Fillable.h"
 #include "Objects/Chair.h"
-#include "Objects/CoffeeCup.h"
 #include "Subsystems/SeatingManager.h"
 #include "Utils/AttachUtils.h"
 #include "Engine/GameInstance.h"
@@ -108,23 +108,28 @@ void ACatController::Tick(float DeltaTime)
 
 FInteractEligibility* ACatController::CanInteract(AActor* HeldObject)
 {
-	if (ACoffeeCup* CoffeeCupToGrab = Cast<ACoffeeCup>(HeldObject))
+	if (AFillable* DrinkToGrab = Cast<AFillable>(HeldObject))
 	{
-		return new FInteractEligibility(!CoffeeCup 
-			// && CoffeeCupToGrab->IsFull() 
-			&& bWantsCoffee, 
-			FText::FromString("Give coffee"));
+		if (DrinkToGrab->IsReadyToServe())
+		{
+			return new FInteractEligibility(!Drink && bWantsCoffee, FText::FromString("Give coffee"));
+		}
 	}
+
 	return new FInteractEligibility(!HeldObject, FText::FromString("Pick up"));
 }
 
 AActor* ACatController::Interact(AActor* HeldObject)
 {
-	if (ACoffeeCup* CoffeeCupToGrab = Cast<ACoffeeCup>(HeldObject))
+	if (AFillable* DrinkToGrab = Cast<AFillable>(HeldObject))
 	{
-		ReceiveCoffee(CoffeeCupToGrab);
-		return nullptr;
+		if (DrinkToGrab->IsReadyToServe())
+		{
+			ReceiveDrink(DrinkToGrab);
+			return nullptr;
+		}
 	}
+
 	return this;
 }
 
@@ -175,22 +180,22 @@ void ACatController::OnSitComplete()
 	bWantsCoffee = true;
 }
 
-void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
+void ACatController::ReceiveDrink(AFillable* DrinkToGrab)
 {
-	// Grab coffee
+	// Grab drink
 	bWantsCoffee = false;
 	if (AnimInstance) AnimInstance->bIsDrinking = true;
-	CoffeeCup = CoffeeCupToGrab;
-	AttachUtils::SetCollisionOfHeld(CoffeeCup, false);
-	CoffeeCupToGrab->AttachToComponent(HoldPosition, AttachUtils::GetPickupAttachRules());
-	FRotator CurrentRotation = CoffeeCupToGrab->GetActorRotation();
-	CoffeeCupToGrab->SetActorRotation(FRotator(0.0f, CurrentRotation.Yaw, 0.0f));
+	Drink = DrinkToGrab;
+	AttachUtils::SetCollisionOfHeld(Drink, false);
+	DrinkToGrab->AttachToComponent(HoldPosition, AttachUtils::GetPickupAttachRules());
+	FRotator CurrentRotation = DrinkToGrab->GetActorRotation();
+	DrinkToGrab->SetActorRotation(FRotator(0.0f, CurrentRotation.Yaw, 0.0f));
 	
 	// Hide prompt
 	if (SpeechBubble) SpeechBubble->SetVisibility(false);
 	
-	CoffeeCup->OnFillableEmpty.AddDynamic(this, &ACatController::OnCoffeeFinished);
-	CoffeeCup->Drain(0.0f, 1.0f);
+	Drink->OnFillableEmpty.AddDynamic(this, &ACatController::OnDrinkFinished);
+	Drink->Drain(0.0f, 1.0f);
 	
 	GetWorld()->SpawnActor<ACoin>(CoinBlueprint, GetActorLocation() + FVector(0.0f, 0.0f, 5.0f), FRotator(0.0f, 0.0f, 0.0f));
 
@@ -200,12 +205,12 @@ void ACatController::ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab)
 	}
 }
 
-void ACatController::OnCoffeeFinished()
+void ACatController::OnDrinkFinished()
 {
-	CoffeeCup->OnFillableEmpty.RemoveDynamic(this, &ACatController::OnCoffeeFinished);
-	AttachUtils::SetCollisionOfHeld(CoffeeCup, true);
-	CoffeeCup->DetachFromActor(AttachUtils::GetDropDetachmentRules());
-	CoffeeCup = nullptr;
+	Drink->OnFillableEmpty.RemoveDynamic(this, &ACatController::OnDrinkFinished);
+	AttachUtils::SetCollisionOfHeld(Drink, true);
+	Drink->DetachFromActor(AttachUtils::GetDropDetachmentRules());
+	Drink = nullptr;
 	
 	if (AIController && SeatingManager)
 	{

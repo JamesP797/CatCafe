@@ -13,6 +13,15 @@ AFillable::AFillable()
 	ContentsSurface = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ContentsSurface"));
 	ContentsMask = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ContentsMask"));
 	ContentsContainer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ContentsContainer"));
+
+	// These components are visual only and should never affect the scene's physics.
+	ContentsBody->SetCollisionProfileName(TEXT("NoCollision"));
+	ContentsSurface->SetCollisionProfileName(TEXT("NoCollision"));
+	ContentsMask->SetCollisionProfileName(TEXT("NoCollision"));
+
+	ContentsBody->SetGenerateOverlapEvents(false);
+	ContentsSurface->SetGenerateOverlapEvents(false);
+	ContentsMask->SetGenerateOverlapEvents(false);
 }
 
 void AFillable::BeginPlay()

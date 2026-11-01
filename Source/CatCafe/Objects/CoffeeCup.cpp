@@ -44,9 +44,33 @@ AActor* ACoffeeCup::Interact(AActor* HeldObject)
 	if (AMilkJug* MilkJug = Cast<AMilkJug>(HeldObject))
 	{
 		// TODO change material colour
-		FillUp();
+		AddMilk();
 		MilkJug->Drain();
 		return HeldObject;
 	}
 	return this;
+}
+
+void ACoffeeCup::FillWithEspresso(float Amount)
+{
+	bContainsEspresso = true;
+	bContainsMilk = false;
+	FillUp(Amount);
+}
+
+void ACoffeeCup::AddMilk()
+{
+	bContainsMilk = true;
+	FillUp();
+}
+
+void ACoffeeCup::Stop()
+{
+	Super::Stop();
+
+	if (IsEmpty())
+	{
+		bContainsEspresso = false;
+		bContainsMilk = false;
+	}
 }

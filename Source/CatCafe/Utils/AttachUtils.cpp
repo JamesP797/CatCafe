@@ -5,11 +5,22 @@
 
 void AttachUtils::SetCollisionOfHeld(const AActor* Object, const bool Enabled)
 {
-	if (UPrimitiveComponent* Root = Cast<UPrimitiveComponent>(Object->GetRootComponent())) 
-		Root->SetSimulatePhysics(Enabled);
-		
-	TArray<UPrimitiveComponent*> Components;
-	Object->GetComponents<UPrimitiveComponent>(Components);
-	for (UPrimitiveComponent* Comp : Components) Comp->SetCollisionEnabled(Enabled 
-		? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+	UPrimitiveComponent* Root = Cast<UPrimitiveComponent>(Object->GetRootComponent());
+	if (!Root)
+	{
+		return;
+	}
+
+	// Only the root is the physics body. Visual child components (such as
+	// Fillable's contents meshes) must keep their own collision settings.
+	if (Enabled)
+	{
+		Root->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Root->SetSimulatePhysics(true);
+	}
+	else
+	{
+		Root->SetSimulatePhysics(false);
+		Root->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }

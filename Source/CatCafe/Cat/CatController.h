@@ -11,7 +11,7 @@ class UCatAnimInstance;
 class USeatingManager;
 class AChair;
 class ACatAIController;
-class ACoffeeCup;
+class AFillable;
 class UWidgetComponent;
 
 UCLASS()
@@ -20,10 +20,10 @@ class CATCAFE_API ACatController : public ACharacter, public IInteractable
 	GENERATED_BODY()
 	
 private:
-	void ReceiveCoffee(ACoffeeCup* CoffeeCupToGrab);
+	void ReceiveDrink(AFillable* DrinkToGrab);
 	
 	UFUNCTION()
-	void OnCoffeeFinished();
+	void OnDrinkFinished();
 	
 	UPROPERTY()
 	USeatingManager* SeatingManager;
@@ -47,7 +47,7 @@ protected:
 	UWidgetComponent* SpeechBubble;
 	
 	UPROPERTY()
-	ACoffeeCup* CoffeeCup;
+	AFillable* Drink;
 	
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USceneComponent* HoldPosition;
